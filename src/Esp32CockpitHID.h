@@ -56,4 +56,15 @@ public:
     uint16_t _onGetDescriptor(uint8_t *buffer) override;
 };
 
+
+typedef struct {
+    CustomHIDDevice* HidDevice;
+    const uint8_t* HidDescriptor;
+    uint8_t HidDescriptor_size;
+} HIDDeviceInfo;
+
+
+void init_hidDevices();
+void send_reports(uint32_t loop_counter);
+
 #endif // ESP32_COCKPIT_HID_H
