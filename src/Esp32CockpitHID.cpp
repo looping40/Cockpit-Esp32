@@ -15,7 +15,7 @@ const uint8_t vendor_hid_report_descriptor[38] = {
     0x15, 0x00,                    //   Logical Minimum (0)
     0x26, 0xFF, 0x00,              //   Logical Maximum (255)
     0x75, 0x08,                    //   Report Size (8 bits)
-    0x95, 0x40,                    //   Report Count (64)
+    0x95, 0x3F,                    //   Report Count (64-1)
     0x81, 0x02,                    //   Input (Data, Var, Abs)
 
     // Output Report (PC to ESP32-S3) - Report ID 2
@@ -24,7 +24,7 @@ const uint8_t vendor_hid_report_descriptor[38] = {
     0x15, 0x00,                    //   Logical Minimum (0)
     0x26, 0xFF, 0x00,              //   Logical Maximum (255)
     0x75, 0x08,                    //   Report Size (8 bits)
-    0x95, 0x40,                    //   Report Count (64)
+    0x95, 0x3F,                    //   Report Count (64-1)
     0x91, 0x02,                    //   Output (Data, Var, Abs)
     0xC0                           // End Collection
 };
@@ -228,10 +228,10 @@ void send_reports(uint32_t loop_counter){
         return;
     }
 
-#ifdef nico
+//#ifdef nico
     // --- Envoi du rapport pour l'interface Vendor Defined (Input Report ID 1) ---
-    uint8_t vendorInputData[64];
-    for (int i = 0; i < 64; i++) {
+    uint8_t vendorInputData[63];
+    for (int i = 0; i < 63; i++) {
         vendorInputData[i] = (loop_counter + i) % 256;
     }
     if (hid_main_interface.SendReport(1, vendorInputData, sizeof(vendorInputData))) {
@@ -240,7 +240,7 @@ void send_reports(uint32_t loop_counter){
     } else {
         Serial0.println("Échec de l'envoi du rapport Vendor Defined (ID 1).");
     }
-#endif
+//#endif
 
     // --- Envoi du rapport pour le Joystick Full Instance 1 (Input Report ID 3) ---
     struct FullJoystickReport {
