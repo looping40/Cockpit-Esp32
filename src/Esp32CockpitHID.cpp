@@ -1,7 +1,7 @@
 // src/Esp32CockpitHID.cpp
 #include "Esp32CockpitHID.h"
 #include <USB.h>
-//#include <string.h>
+
 
 // --- Report Descriptor for Vendor Defined Device ---
 const uint8_t vendor_hid_report_descriptor[38] = {
@@ -31,7 +31,6 @@ const uint8_t vendor_hid_report_descriptor[38] = {
 
 uint16_t VendorDefinedHID::_onGetDescriptor(uint8_t *buffer) {
     memcpy(buffer, vendor_hid_report_descriptor, sizeof(vendor_hid_report_descriptor));
-    Serial0.println("VendorDefinedHID::_onGetDescriptor");
     return sizeof(vendor_hid_report_descriptor);
 }
 void VendorDefinedHID::_onOutput(uint8_t report_id, const uint8_t *buffer, uint16_t len) {
@@ -182,9 +181,9 @@ uint16_t ButtonsOnlyJoystickHID_ID6::_onGetDescriptor(uint8_t *buffer) {
 }
 
 
-// VendorDefinedHID Report IDs (1 et 2) dans son descripteur.
+// Crée une instance pour chaque périphérique HID avec son Report ID unique
+// VendorDefinedHID gère ses propres Report IDs (1 et 2) dans son descripteur.
 VendorDefinedHID myVendorDevice;
-
 // Utilisez les nouvelles classes spécifiques à chaque Report ID
 FullJoystickHID_ID3 myFullJoystick1; // Instance 1 du joystick complet (Report ID 3 dans son descripteur)
 FullJoystickHID_ID5 myFullJoystick2; // Instance 2 du joystick complet (Report ID 5 dans son descripteur)
@@ -219,23 +218,17 @@ void init_hidDevices(){
     Serial0.println("USB initialisé. L'ESP32-S3 devrait maintenant apparaître comme un périphérique HID composite.");
 
     hid_main_interface.begin(); // Démarre l'interface HID
-    
-    /*if (!hid_main_interface.ready()) {
-        delay(100); // Attendre un peu avant de réessayer
-        //return;
-    }*/
-
-    Serial0.println("Tous les périphériques HID ont été ajoutés avec succès.");
 }
 
 
 void send_reports(uint32_t loop_counter){
     if (!hid_main_interface.ready()) {
         delay(100); // Attendre un peu avant de réessayer
+        Serial0.println("hid_main_interface not ready");
         return;
     }
 
-
+#ifdef nico
     // --- Envoi du rapport pour l'interface Vendor Defined (Input Report ID 1) ---
     uint8_t vendorInputData[64];
     for (int i = 0; i < 64; i++) {
@@ -247,6 +240,7 @@ void send_reports(uint32_t loop_counter){
     } else {
         Serial0.println("Échec de l'envoi du rapport Vendor Defined (ID 1).");
     }
+#endif
 
     // --- Envoi du rapport pour le Joystick Full Instance 1 (Input Report ID 3) ---
     struct FullJoystickReport {

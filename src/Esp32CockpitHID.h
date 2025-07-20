@@ -1,9 +1,24 @@
-// src/Esp32CockpitHID.h
-#ifndef ESP32_COCKPIT_HID_H
-#define ESP32_COCKPIT_HID_H
+#pragma once
 
 #include <Arduino.h>
 #include <USBHID.h> // Contient la déclaration de USBHIDDevice
+
+extern USBHID hid_main_interface; 
+
+extern const uint8_t vendor_hid_report_descriptor[38];
+extern const uint8_t full_joystick_hid_report_descriptor_ID3[55];
+extern const uint8_t full_joystick_hid_report_descriptor_ID5[55]; 
+extern const uint8_t buttons_only_joystick_hid_report_descriptor_ID4[25];
+extern const uint8_t buttons_only_joystick_hid_report_descriptor_ID6[25];
+
+class CustomHIDDevice;
+typedef struct {
+    CustomHIDDevice* HidDevice;
+    const uint8_t* HidDescriptor;
+    uint8_t HidDescriptor_size;
+} HIDDeviceInfo;
+
+extern HIDDeviceInfo MyHidDevices[5];
 
 // Classe de base pour les périphériques HID spécifiques
 class CustomHIDDevice : public USBHIDDevice {
@@ -57,14 +72,5 @@ public:
 };
 
 
-typedef struct {
-    CustomHIDDevice* HidDevice;
-    const uint8_t* HidDescriptor;
-    uint8_t HidDescriptor_size;
-} HIDDeviceInfo;
-
-
-void init_hidDevices();
 void send_reports(uint32_t loop_counter);
-
-#endif // ESP32_COCKPIT_HID_H
+void init_hidDevices();
