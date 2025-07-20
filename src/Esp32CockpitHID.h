@@ -12,6 +12,7 @@ extern const uint8_t buttons_only_joystick_hid_report_descriptor_ID4[25];
 extern const uint8_t buttons_only_joystick_hid_report_descriptor_ID6[25];
 
 class CustomHIDDevice;
+
 typedef struct {
     CustomHIDDevice* HidDevice;
     const uint8_t* HidDescriptor;
@@ -74,3 +75,27 @@ public:
 
 void send_reports(uint32_t loop_counter);
 void init_hidDevices();
+
+
+typedef struct  {
+    int16_t axes[8];
+    uint8_t buttons[16];
+} FullJoystickReport;
+
+
+typedef struct {
+    uint8_t buttons[16];
+} ButtonsOnlyJoystickReport;
+
+
+typedef struct {
+    FullJoystickReport joy1;
+    FullJoystickReport joy2;
+    ButtonsOnlyJoystickReport joy3;
+    ButtonsOnlyJoystickReport joy4;
+} FullJoystickReportStruct;
+
+union FullJoystickReportUnion {
+    uint8_t data8[sizeof(FullJoystickReportStruct)];
+    FullJoystickReportStruct joys;
+};

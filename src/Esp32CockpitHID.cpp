@@ -228,7 +228,6 @@ void send_reports(uint32_t loop_counter){
         return;
     }
 
-//#ifdef nico
     // --- Envoi du rapport pour l'interface Vendor Defined (Input Report ID 1) ---
     uint8_t vendorInputData[63];
     for (int i = 0; i < 63; i++) {
@@ -240,27 +239,23 @@ void send_reports(uint32_t loop_counter){
     } else {
         Serial0.println("Échec de l'envoi du rapport Vendor Defined (ID 1).");
     }
-//#endif
 
     // --- Envoi du rapport pour le Joystick Full Instance 1 (Input Report ID 3) ---
-    struct FullJoystickReport {
-        int16_t axes[8];
-        uint8_t buttons[16];
-    } joystickFullData1;
-
-    double time_in_seconds = millis() / 1000.0;
-    joystickFullData1.axes[0] = (int16_t)(sin(time_in_seconds) * 32767.0);
-    joystickFullData1.axes[1] = (int16_t)(sin(time_in_seconds + PI / 2.0) * 32767.0); // Décalage pour l'axe Y
-    for(int i = 2; i < 8; i++) joystickFullData1.axes[i] = 0;
+    FullJoystickReportUnion myJoyBuffer;
     
-    memset(joystickFullData1.buttons, 0, sizeof(joystickFullData1.buttons));
+    double time_in_seconds = millis() / 1000.0;
+    myJoyBuffer.joys.joy1.axes[0] = (int16_t)(sin(time_in_seconds) * 32767.0);
+    myJoyBuffer.joys.joy1.axes[1] = (int16_t)(sin(time_in_seconds + PI / 2.0) * 32767.0); // Décalage pour l'axe Y
+    for(int i = 2; i < 8; i++)  myJoyBuffer.joys.joy1.axes[i] = 0;
+    
+    memset( myJoyBuffer.joys.joy1.buttons, 0, sizeof( myJoyBuffer.joys.joy1.buttons));
     if (loop_counter % 20 == 0) {
-        joystickFullData1.buttons[0] |= (1 << 0); // Active le bouton 1
+         myJoyBuffer.joys.joy1.buttons[0] |= (1 << 0); // Active le bouton 1
     } else {
-        joystickFullData1.buttons[0] &= ~(1 << 0); // Désactive le bouton 1
+         myJoyBuffer.joys.joy1.buttons[0] &= ~(1 << 0); // Désactive le bouton 1
     }
 
-    if (hid_main_interface.SendReport(3, (uint8_t*)&joystickFullData1, sizeof(joystickFullData1))) {
+    if (hid_main_interface.SendReport(3, (uint8_t*)&myJoyBuffer.joys.joy1, sizeof(myJoyBuffer.joys.joy1))) {
         // Serial0.print("Joystick Full 1 (ID 3) Input Report sent. X-axis: ");
         // Serial0.println(joystickFullData1.axes[0]);
     } else {
@@ -268,18 +263,17 @@ void send_reports(uint32_t loop_counter){
     }
 
     // --- Envoi du rapport pour le Joystick Full Instance 2 (Input Report ID 5) ---
-    struct FullJoystickReport joystickFullData2;
-    joystickFullData2.axes[0] = (int16_t)(sin(time_in_seconds) * 32767.0);
-    joystickFullData2.axes[1] = (int16_t)(sin(time_in_seconds + PI / 2.0) * 32767.0); // Décalage pour l'axe Y
-    for(int i = 2; i < 8; i++) joystickFullData2.axes[i] = 0;
-    memset(joystickFullData2.buttons, 0, sizeof(joystickFullData2.buttons));
+    myJoyBuffer.joys.joy2.axes[0] = (int16_t)(sin(time_in_seconds) * 32767.0);
+    myJoyBuffer.joys.joy2.axes[1] = (int16_t)(sin(time_in_seconds + PI / 2.0) * 32767.0); // Décalage pour l'axe Y
+    for(int i = 2; i < 8; i++) myJoyBuffer.joys.joy2.axes[i] = 0;
+    memset(myJoyBuffer.joys.joy2.buttons, 0, sizeof(myJoyBuffer.joys.joy2.buttons));
     if (loop_counter % 20 == 0) {
-        joystickFullData2.buttons[1] |= (1 << 0); // Active le bouton 1
+        myJoyBuffer.joys.joy2.buttons[1] |= (1 << 0); // Active le bouton 1
     } else {
-        joystickFullData2.buttons[1] &= ~(1 << 0); // Désactive le bouton 1
+        myJoyBuffer.joys.joy2.buttons[1] &= ~(1 << 0); // Désactive le bouton 1
     }
 
-    if (hid_main_interface.SendReport(5, (uint8_t*)&joystickFullData2, sizeof(joystickFullData2))) {
+    if (hid_main_interface.SendReport(5, (uint8_t*)&myJoyBuffer.joys.joy2, sizeof(myJoyBuffer.joys.joy2))) {
         // Serial0.print("Joystick Full 2 (ID 5) Input Report sent. X-axis: ");
         // Serial0.println(joystickFullData2.axes[0]);
     } else {
@@ -287,14 +281,13 @@ void send_reports(uint32_t loop_counter){
     }
 
     // --- Envoi du rapport pour le Joystick Buttons-Only Instance 1 (Input Report ID 4) ---
-    uint8_t joystickButtonsData1[16];
-    memset(joystickButtonsData1, 0, sizeof(joystickButtonsData1));
+    memset(&myJoyBuffer.joys.joy3, 0, sizeof(myJoyBuffer.joys.joy3));
     if (loop_counter % 20 == 0) {
-        joystickButtonsData1[2] |= (1 << 0); // Active le bouton 1
+        myJoyBuffer.joys.joy3.buttons[2] |= (1 << 0); // Active le bouton 1
     } else {
-        joystickButtonsData1[2] &= ~(1 << 0); // Désactive le bouton 1
+        myJoyBuffer.joys.joy3.buttons[2] &= ~(1 << 0); // Désactive le bouton 1
     }
-    if (hid_main_interface.SendReport(4, joystickButtonsData1, sizeof(joystickButtonsData1))) {
+    if (hid_main_interface.SendReport(4, (uint8_t*)&myJoyBuffer.joys.joy3, sizeof(myJoyBuffer.joys.joy3))) {
         // Serial0.print("Joystick Buttons 1 (ID 4) Input Report sent. Button 8 state: ");
         // Serial0.println((joystickButtonsData1[0] >> 7) & 1);
     } else {
@@ -302,14 +295,13 @@ void send_reports(uint32_t loop_counter){
     }
     
     // --- Envoi du rapport pour le Joystick Buttons-Only Instance 2 (Input Report ID 6) ---
-    uint8_t joystickButtonsData2[16];
-    memset(joystickButtonsData2, 0, sizeof(joystickButtonsData2));
+    memset(&myJoyBuffer.joys.joy4, 0, sizeof(myJoyBuffer.joys.joy4));
     if (loop_counter % 20 == 0) {
-        joystickButtonsData2[3] |= (1 << 0); // Active le bouton 1
+        myJoyBuffer.joys.joy4.buttons[3] |= (1 << 0); // Active le bouton 1
     } else {
-        joystickButtonsData2[3] &= ~(1 << 0); // Désactive le bouton 1
+        myJoyBuffer.joys.joy4.buttons[3] &= ~(1 << 0); // Désactive le bouton 1
     }
-    if (hid_main_interface.SendReport(6, joystickButtonsData2, sizeof(joystickButtonsData2))) {
+    if (hid_main_interface.SendReport(6, (uint8_t*)&myJoyBuffer.joys.joy4, sizeof(myJoyBuffer.joys.joy4))) {
         // Serial0.print("Joystick Buttons 2 (ID 6) Input Report sent. Button 9 state: ");
         // Serial0.println((joystickButtonsData2[1] >> 0) & 1);
     } else {
