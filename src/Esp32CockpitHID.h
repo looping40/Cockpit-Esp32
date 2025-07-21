@@ -21,6 +21,7 @@ typedef struct {
 
 extern HIDDeviceInfo MyHidDevices[5];
 
+
 // Classe de base pour les périphériques HID spécifiques
 class CustomHIDDevice : public USBHIDDevice {
 public:
@@ -88,14 +89,10 @@ typedef struct {
 } ButtonsOnlyJoystickReport;
 
 
-typedef struct {
+struct {
     FullJoystickReport joy1;
     FullJoystickReport joy2;
     ButtonsOnlyJoystickReport joy3;
     ButtonsOnlyJoystickReport joy4;
-} FullJoystickReportStruct;
+}HID_Reports;
 
-union FullJoystickReportUnion {
-    uint8_t data8[sizeof(FullJoystickReportStruct)];
-    FullJoystickReportStruct joys;
-};

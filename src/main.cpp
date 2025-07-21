@@ -3,6 +3,9 @@
 #include <USB.h>
 #include <USBCDC.h>     // Pour Serial0 over USB
 #include <USBHID.h>     // Inclut USBHID et USBHIDDevice
+#include <Wire.h>
+
+#include "main.h"
 
 // Inclut la déclaration de nos nouvelles classes HID spécifiques
 #include "Esp32CockpitHID.h"
@@ -21,13 +24,32 @@ void setup() {
     USB.serialNumber("0001"); // un numéro de série
 
     init_hidDevices();
+
+    Wire.begin();
+
+    //init panels
+    init_panels();
 }
 
+
 void loop() {
-    // Démonstration de l'envoi de rapports pour chaque interface HID
     static uint32_t loop_counter = 0;
     send_reports(loop_counter);
 
     loop_counter++;
     delay(50);
+}
+
+
+void init_panels(){
+    for(uint8_t i=0;i<NB_PANELS;i++){   
+        uint8_t addr = panels[i]->Init();
+        #if defined(USE_RS232)
+        if (panels[i]->i2c_connected)
+            printf("\033[32;40m(0x%x) panel %s connected\033[37;40m\r\n", addr, panels[i]->name);
+        else
+            printf("\033[31;40m(0x%x) panel %s NOT connected\033[37;40m\r\n", addr, panels[i]->name);
+        #endif
+        //delay_ms(5);
+    }
 }
